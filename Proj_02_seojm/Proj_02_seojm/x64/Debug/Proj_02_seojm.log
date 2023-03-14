@@ -1,2 +1,3 @@
 ﻿  Proj_02_seojm.c
-  Proj_02_seojm.vcxproj -> C:\Users\win10\Documents\GitHub\2023\DS_2023\Proj_02_seojm\x64\Debug\Proj_02_seojm.exe
+D:\GitHub\DS_2023\Proj_02_seojm\Proj_02_seojm\Proj_02_seojm.c(185): warning C4715: 'search_itr': 모든 제어 경로에서 값을 반환하지는 않습니다.
+  Proj_02_seojm.vcxproj -> D:\GitHub\DS_2023\Proj_02_seojm\x64\Debug\Proj_02_seojm.exe
