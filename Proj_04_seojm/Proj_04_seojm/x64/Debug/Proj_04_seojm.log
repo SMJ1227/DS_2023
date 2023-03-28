@@ -1,0 +1,3 @@
+﻿  Proj_04_seojm.c
+C:\Users\win10\Documents\GitHub\2023\DS_2023\Proj_04_seojm\Proj_04_seojm\Proj_04_seojm.c(54,19): warning C4013: 'strlen'이(가) 정의되지 않았습니다. extern은 int형을 반환하는 것으로 간주합니다.
+  Proj_04_seojm.vcxproj -> C:\Users\win10\Documents\GitHub\2023\DS_2023\Proj_04_seojm\x64\Debug\Proj_04_seojm.exe
