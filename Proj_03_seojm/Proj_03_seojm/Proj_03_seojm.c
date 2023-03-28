@@ -2,8 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #define MAX(X,Y) ((X) > (Y) ? (X) : (Y))
-#define MAX_DEGREE 101 // 다항식의 최대차수 + 1
 
+// 다항식 표현 방법 #1
+#define MAX_DEGREE 101 // 다항식의 최대차수 + 1
 typedef struct {
 	int degree;
 	float coef[MAX_DEGREE];
@@ -63,12 +64,15 @@ int main(void)
 	polynomial b = { 4,{ 7, 0, 5, 0, 1 } };
 	polynomial c;
 	polynomial d;
+	printf("a(x) = ");
 	print_poly(a);
+	printf("b(x) = ");
 	print_poly(b);
-	//c = poly_add1(a, b);
+	c = poly_add1(a, b);
 	d = poly_mul1(a, b);
-	printf("-------------------------------------------------------------------- -		--------\n");
-	//print_poly(c);
+	printf("c(x) = ");
+	print_poly(c);
+	printf("d(x) = ");
 	print_poly(d);
 	return 0;
 }
