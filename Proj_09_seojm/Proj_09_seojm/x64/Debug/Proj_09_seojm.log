@@ -1,2 +1,3 @@
 ﻿  proj_09_seojm.c
-  Proj_09_seojm.vcxproj -> C:\Users\win10\Documents\GitHub\2023\DS_2023\Proj_09_seojm\x64\Debug\Proj_09_seojm.exe
+D:\GitHub\DS_2023\Proj_09_seojm\Proj_09_seojm\proj_09_seojm.c(94,25): warning C4133: '함수': 'element'과(와) 'DSongNode *' 사이의 형식이 호환되지 않습니다.
+  Proj_09_seojm.vcxproj -> D:\GitHub\DS_2023\Proj_09_seojm\x64\Debug\Proj_09_seojm.exe
