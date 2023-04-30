@@ -205,7 +205,7 @@ int main(void)
 	printf("이진 탐색 트리의 노드 수, leaf노드 수, 높이 구하기\n");
 	printf("노드 수 = %d \nleaf 노드 수 = %d \n높이 = %d \n\n", get_node_count(root), get_leaf_count(root), get_height(root));
 	printf("이진 탐색 트리 레벨 탐색 순회 결과\n");
-	level_order(root);
+	//level_order(root);
 	printf("\n\n");
 	printf("이진 탐색 트리 중위 순회 결과 \n");
 	inorder(root);
@@ -229,7 +229,7 @@ int main(void)
 	printf("\n\n이진 탐색 트리 전체 삭제 \n");
 	root = delete_tree(root);
 	printf("\n\n이진 탐색 트리 레벨 탐색 순회 결과\n");
-	level_order(root);
+	//level_order(root);
 	printf("\n\n");
 	return 0;
 }
