@@ -1,0 +1,3 @@
+﻿  proj_13_seojm.c
+D:\GitHub\DS_2023\Proj_13_seojm\Proj_13_seojm\proj_13_seojm.c(83,11): warning C4013: 'clock'이(가) 정의되지 않았습니다. extern은 int형을 반환하는 것으로 간주합니다.
+  Proj_13_seojm.vcxproj -> D:\GitHub\DS_2023\Proj_13_seojm\x64\Debug\Proj_13_seojm.exe
