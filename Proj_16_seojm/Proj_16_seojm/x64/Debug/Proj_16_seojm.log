@@ -1,0 +1,4 @@
+﻿  proj_16_seojm.c
+C:\Users\win10\Documents\GitHub\2023\DS_2023\Proj_16_seojm\Proj_16_seojm\proj_16_seojm.c(185,13): warning C4101: 'end' :참조되지 않은 지역 변수입니다.
+C:\Users\win10\Documents\GitHub\2023\DS_2023\Proj_16_seojm\Proj_16_seojm\proj_16_seojm.c(185,6): warning C4101: 'start' :참조되지 않은 지역 변수입니다.
+  Proj_16_seojm.vcxproj -> C:\Users\win10\Documents\GitHub\2023\DS_2023\Proj_16_seojm\x64\Debug\Proj_16_seojm.exe
