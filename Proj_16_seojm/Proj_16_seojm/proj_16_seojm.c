@@ -1,4 +1,4 @@
-#define PROB 3
+#define PROB 4
 
 #if PROB == 1
 
@@ -260,7 +260,7 @@ element pop(StackType* s) {
 	else return s->data[(s->top)--];
 }
 // 그래프 초기화
-void init(GraphType* g) {
+void graph_init(GraphType* g) {
 	int v;
 	g->n = 0;
 	for (v = 0; v < MAX_VERTICES; v++) {
@@ -301,7 +301,7 @@ int topo_sort(GraphType* g)
 	GraphNode* node;
 
 	// 모든 정점의 진입 차수를 계산
-	int* in_degree = (int*)malloc(g->n * sizeof(int));
+	int* in_degree = (int*)malloc((g->n+1) * sizeof(int));
 	for (i = 0; i < g->n; i++)			// 초기화
 		in_degree[i] = 0;
 	for (i = 0; i < g->n; i++) {
@@ -312,7 +312,7 @@ int topo_sort(GraphType* g)
 		}
 	}
 	// 진입 차수가 0인 정점을 스택에 삽입
-	init(&s);
+	init_stack(&s);
 	for (i = 0; i < g->n; i++) {
 		if (in_degree[i] == 0) push(&s, i);
 	}
@@ -332,6 +332,208 @@ int topo_sort(GraphType* g)
 	free(in_degree);
 	printf("\n");
 	return (i == g->n);	// 반환값이 1이면 성공, 0이면 실패
+}
+int main(void)
+{
+	GraphType g;
+	graph_init(&g);
+	// test data 1
+	
+	insert_vertex(&g, 6);
+	insert_edge(&g, 0, 2);
+	insert_edge(&g, 0, 3);
+	insert_edge(&g, 1, 3);
+	insert_edge(&g, 1, 4);
+	insert_edge(&g, 2, 3);
+	insert_edge(&g, 2, 5);
+	insert_edge(&g, 3, 5);
+	insert_edge(&g, 4, 5);
+	/*
+	// test data 2
+	insert_vertex(&g, 8);
+	insert_edge(&g, 0, 1);
+	insert_edge(&g, 1, 2);
+	insert_edge(&g, 1, 3);
+	insert_edge(&g, 1, 4);
+	insert_edge(&g, 2, 7);
+	insert_edge(&g, 3, 6);
+	insert_edge(&g, 4, 5);
+	insert_edge(&g, 4, 6);
+	insert_edge(&g, 5, 7);
+	insert_edge(&g, 6, 7);
+	*/
+	//위상 정렬 
+	topo_sort(&g);
+}
+#elif PROB == 4
+#include <stdio.h>
+#define TRUE 1
+#define FALSE 0
+#define MAX_VER 50
+//그래프 구현 (연결리스트 그래프)
+typedef struct GraphNode	{
+	int data;
+	struct GraphNode* link;
+}GraphNode;
+
+typedef struct GraphType {
+	int n; //정점의 개수
+	GraphNode* adj_list[MAX_VER];
+}GraphType;
+
+void init_graph(GraphType* g) {
+	int v;
+	g->n = 0;
+	for (v = 0; v < MAX_VER; v++) {
+		g->adj_list[v] = NULL;
+	}
+}
+
+void insert_vertex(GraphType* g, int vertex) {
+	if (((g->n) + 1) > MAX_VER) return;
+	g->n++;
+}
+
+/*그래프에 있는 정점 별 간선을 display해준다*/
+void display_edges(GraphType* g) {
+	GraphNode* tmp;
+	for (int i = 0; i < g->n; i++) {
+		tmp = g->adj_list[i];
+		printf("정점 %d->", i);
+		while (tmp != NULL) {
+			printf("%d ", tmp->data);
+			tmp = tmp->link;
+		}
+		printf("\n");
+	}
+}
+void insert_edges(GraphType* g, int u, int v) {
+	if (u >= MAX_VER || v >= MAX_VER) return;
+	GraphNode* node = (GraphNode*)malloc(sizeof(GraphNode));
+	node->data = v;
+	node->link = g->adj_list[u];
+	g->adj_list[u] = node;
+}
+
+// 스택 구현 (연결리스트 스택)
+typedef struct StackNode {
+	int data;
+	struct StackNode* link;
+}StackNode;
+
+typedef struct StackType {
+	StackNode* top;
+}StackType;
+
+void init_stack(StackType* s) {
+	s->top = NULL;
+}
+
+int is_empty(StackType* s) {
+	return s->top == NULL;
+}
+
+void push_stack(StackType* s, int item) {
+	StackNode* node = (StackNode*)malloc(sizeof(StackNode));
+	node->data = item;
+	node->link = s->top;
+	s->top = node;
+}
+
+int pop_stack(StackType* s) {
+	if (is_empty(s)) return;
+	StackNode* removed = s->top;
+	int item = removed->data;
+	s->top = s->top->link;
+	free(removed);
+	return item;
+}
+
+
+void remove_edge(GraphType* g, int u, int v) // u엣지 삭제할 정점 - v삭제할 엣지 
+{
+	GraphNode* tmp1 = g->adj_list[u]; //u에서 v 삭제
+	GraphNode* removed = NULL; //동적할당 해제를 위해서 
+	GraphNode* pre = g->adj_list[u];
+	while (tmp1 != NULL)
+	{
+		if (tmp1->data == v) {
+			removed = tmp1;
+			pre->link = tmp1->link; //링크 바꿔주기 
+			free(removed);
+			break; //그래프 내에 특정 정점에대한 간선은 1개 밖에 없으므로. 
+			//그리고 removed free한 상태에서 tmp 변경해주면 에러 난다. 
+		}
+		pre = tmp1; //선행노드 저장 (링크 수정을 위해서)
+		tmp1 = tmp1->link;
+	}
+}
+
+void topo_sort(GraphType* g) {
+	int i;
+	StackType s;
+	GraphNode* node;
+
+	// 모든 정점의 진입 차수 계산
+	int* in_degree = (int*)malloc(g->n * sizeof(int));
+	for (i = 0; i < g->n; i++)
+		in_degree[i] = 0;
+
+	for (i = 0; i < g->n; i++) {
+		node = g->adj_list[i];
+		while (node != NULL) {
+			in_degree[node->data]++;
+			node = node->link;
+		}
+	}
+
+	init_stack(&s);
+
+	// 진입 차수가 0인 정점을 스택에 삽입
+	for (i = 0; i < g->n; i++) {
+		if (in_degree[i] == 0)
+			push_stack(&s, i);
+	}
+
+	// 위상 정렬 실행
+	while (!is_empty(&s)) {
+		int w = pop_stack(&s);
+		printf("%d ", w);
+		node = g->adj_list[w];
+		while (node != NULL) {
+			int u = node->data;
+			in_degree[u]--;
+			if (in_degree[u] == 0)
+				push_stack(&s, u);
+			node = node->link;
+		}
+	}
+
+	free(in_degree);
+	return;
+}
+
+int main(){
+	GraphType g;
+	init_graph(&g);
+
+	insert_vertex(&g, 0);
+	insert_vertex(&g, 1);
+	insert_vertex(&g, 2);
+	insert_vertex(&g, 3);
+	insert_vertex(&g, 4);
+	insert_vertex(&g, 5);
+
+	insert_edges(&g, 0, 2);
+	insert_edges(&g, 0, 3);
+	insert_edges(&g, 1, 3);
+	insert_edges(&g, 1, 4);
+	insert_edges(&g, 2, 3);
+	insert_edges(&g, 2, 5);
+	insert_edges(&g, 3, 5);
+	insert_edges(&g, 4, 5);
+	topo_sort(&g);
+	display_edges(&g);
 }
 
 #endif
