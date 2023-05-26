@@ -3,56 +3,8 @@
 #include <time.h>
 #include <string.h>
 
-#define SIZE 100 // 데이터크기를 변경하며 테스트
+#define SIZE 100000 // 데이터크기를 변경하며 테스트
 #define SWAP(x, y, t) ( (t)=(x), (x)=(y), (y)=(t) )
-#define MAX_QUEUE_SIZE 10000
-#define BUCKETS 10
-#define DIGITS 4
-
-typedef int element;
-typedef struct { // 큐 타입
-	int front;
-	int rear;
-	element data[MAX_QUEUE_SIZE];
-} QueueType;
-// 오류 함수
-void error(char* message) {
-	fprintf(stderr, "%s\n", message);
-	exit(1);
-}
-void init(QueueType* q) {
-	q->rear = -1;
-	q->front = -1;
-}
-int is_full(QueueType* q) {
-	if (q->rear == MAX_QUEUE_SIZE - 1)
-		return 1;
-	else
-		return 0;
-}
-int is_empty(QueueType* q) {
-	if (q->front == q->rear)
-		return 1;
-	else
-		return 0;
-}
-
-void enqueue(QueueType* q, int item) {
-	if (is_full(q)) {
-		error("큐가 포화상태입니다.");
-		return;
-	}
-	q->data[++(q->rear)] = item;
-}
-int dequeue(QueueType* q) {
-	if (is_empty(q)) {
-		error("큐가 공백상태입니다.");
-		return -1;
-	}
-	int item = q->data[++(q->front)];
-	return item;
-}
-
 
 //선택정렬
 void selection_sort(int list[], int n) {
@@ -166,31 +118,78 @@ void quick_sort(int list[], int left, int right) {
 	}
 }
 //기수 정렬
+#define MAX_QUEUE_SIZE 100000
+#define BUCKETS 10
+#define DIGITS 5
+
+typedef int element;
+typedef struct { // 큐 타입
+	int front;
+	int rear;
+	element data[MAX_QUEUE_SIZE];
+} QueueType;
+// 오류 함수
+void error(char* message) {
+	fprintf(stderr, "%s\n", message);
+	exit(1);
+}
+void init(QueueType* q) {
+	q->rear = -1;
+	q->front = -1;
+}
+int is_full(QueueType* q) {
+	if (q->rear == MAX_QUEUE_SIZE - 1)
+		return 1;
+	else
+		return 0;
+}
+int is_empty(QueueType* q) {
+	if (q->front == q->rear)
+		return 1;
+	else
+		return 0;
+}	
+void enqueue(QueueType* q, int item) {
+	if (is_full(q)) {
+		error("큐가 포화상태입니다.");
+		return;
+	}
+	q->data[++(q->rear)] = item;
+}
+int dequeue(QueueType* q) {
+	if (is_empty(q)) {
+		error("큐가 공백상태입니다.");
+		return -1;
+
+	}
+	int item = q->data[++(q->front)];
+	return item;
+}
 void radix_sort(int list[], int n) {
 	int i, b, d, factor = 1;
-	QueueType queues[BUCKETS];
+	QueueType *queues;
+	queues = (QueueType*)malloc(sizeof(QueueType) * BUCKETS);
 
 	for (b = 0; b < BUCKETS; b++) init(&queues[b]);	// 큐들의 초기화
 
 	for (d = 0; d < DIGITS; d++) {
-		for (i = 0; i < n; i++) { // 데이터의 자리수에 따라 큐에 입력
-			int di = (list[i] / factor) % 10;
-			enqueue(&queues[di], list[i]);
-		}
+		for (i = 0; i < n; i++)				// 데이터들을 자리수에 따라 큐에 입력
+			enqueue(&queues[(list[i] / factor) % 10], list[i]);
 
 		for (b = i = 0; b < BUCKETS; b++)			// 버켓에서 꺼내어 list로 합친다.
 			while (!is_empty(&queues[b]))
 				list[i++] = dequeue(&queues[b]);
 		factor *= 10;				// 그 다음 자리수로 간다.
 	}
+	free(queues);
 }
+
 //힙정렬
-#define MAX_ELEMENT 200
 typedef struct {
 	int key;
 } element_heap;
 typedef struct {
-	element_heap heap[MAX_ELEMENT];
+	element_heap heap[SIZE];
 	int heap_size;
 } HeapType;
 // 생성 함수
@@ -221,9 +220,8 @@ element_heap delete_max_heap(HeapType* h) {
 	parent = 1;
 	child = 2;
 	while (child <= h->heap_size) {
-		// 현재 노드의 자식노드 중 더 작은 자식노드를 찾는다.
-		if ((child < h->heap_size) &&
-			(h->heap[child].key) < h->heap[child + 1].key)
+		// 현재 노드의 자식노드 중 더 큰 자식노드를 찾는다.
+		if ((child < h->heap_size) && (h->heap[child].key < h->heap[child + 1].key))
 			child++;
 		if (temp.key >= h->heap[child].key) break;
 		// 한 단계 아래로 이동
@@ -232,23 +230,23 @@ element_heap delete_max_heap(HeapType* h) {
 		child *= 2;
 	}
 	h->heap[parent] = temp;
+
 	return item;
 }
-// 우선 순위 큐인 히프를 이용한 정렬
+
 void heap_sort(element_heap a[], int n) {
 	int i;
 	HeapType* h;
 	h = create();
-	init(h);
+	init_heap(h);
 	for (i = 0; i < n; i++) {
 		insert_max_heap(h, a[i]);
 	}
-	for (i = (n - 1); i >= 0; i--) {
+	for (i = (n-1); h->heap_size > 0; i--) {
 		a[i] = delete_max_heap(h);
 	}
 	free(h);
 }
-
 
 
 int main(void)
@@ -270,81 +268,81 @@ int main(void)
 	selection_sort(list, SIZE); // 선택정렬 호출 
 	e_time = clock();
 	printf("선택정렬 시간 : %d\n", e_time - s_time);
-	if (SIZE <= 100) {
-		for (i = 0; i < SIZE; i++)
-			printf("%d ", list[i]);
-		printf("\n\n");
-	}
+	//if (SIZE <= 100) {
+	//	for (i = 0; i < SIZE; i++)
+	//		printf("%d ", list[i]);
+	//	printf("\n\n");
+	//}
 	memcpy(list, data, sizeof(int) * SIZE);
 	s_time = clock();
 	insertion_sort(list, SIZE);
 	e_time = clock();
 	printf("삽입정렬 시간 : %d\n", e_time - s_time);
-	if (SIZE <= 100) {
-		for (i = 0; i < SIZE; i++)
-			printf("%d ", list[i]);
-		printf("\n\n");
-	}
+	//if (SIZE <= 100) {
+	//	for (i = 0; i < SIZE; i++)
+	//		printf("%d ", list[i]);
+	//	printf("\n\n");
+	//}
 	memcpy(list, data, sizeof(int) * SIZE);
 	s_time = clock();
 	bubble_sort(list, SIZE);
 	e_time = clock();
 	printf("버블정렬 시간 : %d\n", e_time - s_time);
-	if (SIZE <= 100) {
-		for (i = 0; i < SIZE; i++)
-			printf("%d ", list[i]);
-		printf("\n\n");
-	}
+	//if (SIZE <= 100) {
+	//	for (i = 0; i < SIZE; i++)
+	//		printf("%d ", list[i]);
+	//	printf("\n\n");
+	//}
 	memcpy(list, data, sizeof(int) * SIZE);
 	s_time = clock();
 	shell_sort(list, SIZE);
 	e_time = clock();
 	printf("셸정렬 시간 : %d\n", e_time - s_time);
-	if (SIZE <= 100) {
-		for (i = 0; i < SIZE; i++)
-			printf("%d ", list[i]);
-		printf("\n\n");
-	}
+	//if (SIZE <= 100) {
+	//	for (i = 0; i < SIZE; i++)
+	//		printf("%d ", list[i]);
+	//	printf("\n\n");
+	//}
 	memcpy(list, data, sizeof(int) * SIZE);
 	s_time = clock();
 	merge_sort(list, 0, SIZE - 1);
 	e_time = clock();
 	printf("병합정렬 시간 : %d\n", e_time - s_time);
-	if (SIZE <= 100) {
-		for (i = 0; i < SIZE; i++)
-			printf("%d ", list[i]);
-		printf("\n\n");
-	}
+	//if (SIZE <= 100) {
+	//	for (i = 0; i < SIZE; i++)
+	//		printf("%d ", list[i]);
+	//	printf("\n\n");
+	//}
 	memcpy(list, data, sizeof(int) * SIZE);
 	s_time = clock();
 	quick_sort(list, 0, SIZE - 1);
 	e_time = clock();
 	printf("퀵정렬 시간 : %d\n", e_time - s_time);
-	if (SIZE <= 100) {
-		for (i = 0; i < SIZE; i++)
-			printf("%d ", list[i]);
-		printf("\n\n");
-	}
-	memcpy(list, data, sizeof(int) * SIZE);
+	//if (SIZE <= 100) {
+	//	for (i = 0; i < SIZE; i++)
+	//		printf("%d ", list[i]);
+	//	printf("\n\n");
+	//}
+	memcpy(list, data, sizeof(element) * SIZE);
 	s_time = clock();
-	//heap_sort(list, SIZE);
+	heap_sort(list, SIZE);
 	e_time = clock();
 	printf("힙정렬 시간 : %d\n", e_time - s_time);
-	if (SIZE <= 100) {
-		for (i = 0; i < SIZE; i++)
-			printf("%d ", list[i]);
-		printf("\n\n");
-	}
+	//if (SIZE <= 100) {
+	//	for (i = 0; i < SIZE; i++)
+	//		printf("%d ", list[i]);
+	//	printf("\n\n");
+	//}
 	memcpy(list, data, sizeof(int) * SIZE);
 	s_time = clock();
 	radix_sort(list, SIZE); // 기수정렬 호출 
 	e_time = clock();
 	printf("기수정렬 시간 : %d\n", e_time - s_time);
-	if (SIZE <= 100) {
-		for (i = 0; i < SIZE; i++)
-			printf("%d ", list[i]);
-		printf("\n\n");
-	}
+	//if (SIZE <= 100) {
+	//	for (i = 0; i < SIZE; i++)
+	//		printf("%d ", list[i]);
+	//	printf("\n\n");
+	//}
 	free(data); free(list); //free(sorted);
 	return 0;
 }

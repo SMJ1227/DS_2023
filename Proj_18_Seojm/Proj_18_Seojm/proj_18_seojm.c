@@ -88,11 +88,14 @@ int main(void)
 
 
 #elif PROB ==2
+
 #include <stdio.h>
 #include <stdlib.h>
+#define TRUE 1
+#define FALSE 0
 
 typedef struct AVLNode {
-    int data;
+    int key;
     struct AVLNode* left;
     struct AVLNode* right;
     int height;
@@ -106,26 +109,26 @@ typedef struct {
     int rear;
 } Queue;
 
-void initializeQueue(Queue* queue) {
+void init_Queue(Queue* queue) {
     queue->front = -1;
     queue->rear = -1;
 }
 
-int isQueueEmpty(Queue* queue) {
+int is_empty(Queue* queue) {
     return (queue->front == -1 && queue->rear == -1);
 }
 
-int isQueueFull(Queue* queue) {
+int is_full(Queue* queue) {
     return (queue->rear == MAX_SIZE - 1);
 }
 
 void enqueue(Queue* queue, AVLNode* item) {
-    if (isQueueFull(queue)) {
-        printf("Queue is full. Cannot enqueue.\n");
+    if (is_full(queue)) {
+        printf("Queue is full.\n");
         return;
     }
 
-    if (isQueueEmpty(queue))
+    if (is_empty(queue))
         queue->front = 0;
 
     queue->rear++;
@@ -135,15 +138,15 @@ void enqueue(Queue* queue, AVLNode* item) {
 AVLNode* dequeue(Queue* queue) {
     AVLNode* item;
 
-    if (isQueueEmpty(queue)) {
-        printf("Queue is empty. Cannot dequeue.\n");
+    if (is_empty(queue)) {
+        printf("Queue is empty.\n");
         return NULL;
     }
 
     item = queue->data[queue->front];
 
     if (queue->front == queue->rear)
-        initializeQueue(queue);
+        init_Queue(queue);
     else
         queue->front++;
 
@@ -162,7 +165,7 @@ AVLNode* createNode(int data) {
         printf("메모리 할당 오류\n");
         exit(-1);
     }
-    newNode->data = data;
+    newNode->key = data;
     newNode->left = NULL;
     newNode->right = NULL;
     newNode->height = 1;
@@ -203,14 +206,14 @@ AVLNode* rotateRightLeft(AVLNode* node) {
     return rotateLeft(node);
 }
 
-AVLNode* insertNode(AVLNode* root, int data) {
+AVLNode* AVL_insert(AVLNode* root, int data) {
     if (root == NULL)
         return createNode(data);
 
-    if (data < root->data)
-        root->left = insertNode(root->left, data);
-    else if (data > root->data)
-        root->right = insertNode(root->right, data);
+    if (data < root->key)
+        root->left = AVL_insert(root->left, data);
+    else if (data > root->key)
+        root->right = AVL_insert(root->right, data);
     else
         return root;
 
@@ -219,23 +222,86 @@ AVLNode* insertNode(AVLNode* root, int data) {
     int balance = getHeight(root->left) - getHeight(root->right);
 
     if (balance > 1) {
-        if (data < root->left->data) {
-            printf("LL: %d\n", root->data);
+        if (data < root->left->key) {
+            printf("LL : %d\n", root->key);
             return rotateRight(root);
         }
         else {
-            printf("LR: %d\n", root->data);
+            printf("LR : %d\n", root->key);
             return rotateLeftRight(root);
         }
     }
 
     if (balance < -1) {
-        if (data > root->right->data) {
-            printf("RR: %d\n", root->data);
+        if (data > root->right->key) {
+            printf("RR : %d\n", root->key);
             return rotateLeft(root);
         }
         else {
-            printf("RL: %d\n", root->data);
+            printf("RL : %d\n", root->key);
+            return rotateRightLeft(root);
+        }
+    }
+
+    return root;
+}
+AVLNode* findMinValueNode(AVLNode* node) {
+    AVLNode* current = node;
+    while (current && current->left != NULL)
+        current = current->left;
+    return current;
+}
+
+AVLNode* AVL_remove(AVLNode* root, int key) {
+    if (root == NULL)
+        return root;
+
+    if (key < root->key)
+        root->left = AVL_remove(root->left, key);
+    else if (key > root->key)
+        root->right = AVL_remove(root->right, key);
+    else {
+        if (root->left == NULL || root->right == NULL) {
+            AVLNode* temp = root->left ? root->left : root->right;
+            if (temp == NULL) {
+                temp = root;
+                root = NULL;
+            }
+            else
+                *root = *temp;
+            free(temp);
+        }
+        else {
+            AVLNode* temp = findMinValueNode(root->right);
+            root->key = temp->key;
+            root->right = AVL_remove(root->right, temp->key);
+        }
+    }
+
+    if (root == NULL)
+        return root;
+
+    updateHeight(root);
+
+    int balance = getHeight(root->left) - getHeight(root->right);
+
+    if (balance > 1) {
+        if (getHeight(root->left->left) >= getHeight(root->left->right)) {
+            printf("LL : %d\n", root->key);
+            return rotateRight(root);
+        }
+        else {
+            printf("LR : %d\n", root->key);
+            return rotateLeftRight(root);
+        }
+    }
+    if (balance < -1) {
+        if (getHeight(root->right->right) >= getHeight(root->right->left)) {
+            printf("RR : %d\n", root->key);
+            return rotateLeft(root);
+        }
+        else {
+            printf("RL : %d\n", root->key);
             return rotateRightLeft(root);
         }
     }
@@ -243,22 +309,25 @@ AVLNode* insertNode(AVLNode* root, int data) {
     return root;
 }
 
-void printLevelOrder(AVLNode* root) {
+void level_order(AVLNode* root) {
     if (root == NULL)
         return;
 
+    int print = TRUE;
+    int level = 1;
     Queue queue;
-    initializeQueue(&queue);
+    init_Queue(&queue);
     enqueue(&queue, root);
 
     int currentLevel = 1;
     int nextLevel = 0;
 
-    printf("Level Order Traversal:\n");
+    printf("Level Print\n");
 
-    while (!isQueueEmpty(&queue)) {
+    while (!is_empty(&queue)) {
         AVLNode* node = dequeue(&queue);
-        printf("%d ", node->data);
+        if (print == TRUE) printf("Level %d : ", level); print = FALSE;
+        printf("[%d], ", node->key);
 
         if (node->left != NULL) {
             enqueue(&queue, node->left);
@@ -274,8 +343,10 @@ void printLevelOrder(AVLNode* root) {
 
         if (currentLevel == 0) {
             printf("\n");
+            print = TRUE;
             currentLevel = nextLevel;
             nextLevel = 0;
+            level++;
         }
     }
     printf("\n");
@@ -284,30 +355,30 @@ void printLevelOrder(AVLNode* root) {
 int main(void) {
     AVLNode* root = NULL;
 
-    printf("Insert %d\n", 60); root = insertNode(root, 60);
-    printf("Insert %d\n", 50); root = insertNode(root, 50);
-    printf("Insert %d\n", 20); root = insertNode(root, 20);
-    printLevelOrder(root);
-    printf("Insert %d\n", 80); root = insertNode(root, 80);
-    printLevelOrder(root);
-    printf("Insert %d\n", 90); root = insertNode(root, 90);
-    printLevelOrder(root);
-    printf("Insert %d\n", 70); root = insertNode(root, 70);
-    printLevelOrder(root);
-    printf("Insert %d\n", 55); root = insertNode(root, 55);
-    printLevelOrder(root);
-    printf("Insert %d\n", 10); root = insertNode(root, 10);
-    printLevelOrder(root);
-    printf("Insert %d\n", 40); root = insertNode(root, 40);
-    printLevelOrder(root);
-    printf("Insert %d\n", 35); root = insertNode(root, 35);
-    printLevelOrder(root);
-    /*printf("Remove %d\n", 50); root = AVL_remove(root, 50);
-    printLevelOrder(root);
+    printf("Insert %d\n", 60); root = AVL_insert(root, 60);
+    printf("Insert %d\n", 50); root = AVL_insert(root, 50);
+    printf("Insert %d\n", 20); root = AVL_insert(root, 20);
+    level_order(root);
+    printf("Insert %d\n", 80); root = AVL_insert(root, 80);
+    level_order(root);
+    printf("Insert %d\n", 90); root = AVL_insert(root, 90);
+    level_order(root);
+    printf("Insert %d\n", 70); root = AVL_insert(root, 70);
+    level_order(root);
+    printf("Insert %d\n", 55); root = AVL_insert(root, 55);
+    level_order(root);
+    printf("Insert %d\n", 10); root = AVL_insert(root, 10);
+    level_order(root);
+    printf("Insert %d\n", 40); root = AVL_insert(root, 40);
+    level_order(root);
+    printf("Insert %d\n", 35); root = AVL_insert(root, 35);
+    level_order(root);
+    printf("Remove %d\n", 50); root = AVL_remove(root, 50);
+    level_order(root);
     printf("Remove %d\n", 55); root = AVL_remove(root, 55);
-    printLevelOrder(root);*/
+    level_order(root);
 
-    printLevelOrder(root);
+    level_order(root);
 
     return 0;
 }

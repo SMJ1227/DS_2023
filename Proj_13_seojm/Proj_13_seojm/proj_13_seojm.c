@@ -82,6 +82,7 @@ int main(void)
 	}
 	s_time = clock();
 	heap_sort(list, SIZE);
+	for (int i = 0; i < SIZE; i++) sorted_list[i] = list[i];
 	e_time = clock();
 	printf("Heap Sort 걸린 시간 : %d msec\n", e_time - s_time);
 	if (SIZE < 100) {
