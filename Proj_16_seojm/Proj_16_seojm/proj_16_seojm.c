@@ -1,4 +1,4 @@
-#define PROB 4
+#define PROB 1
 
 #if PROB == 1
 

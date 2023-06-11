@@ -1,9 +1,2 @@
 ﻿  proj_16_seojm.c
-D:\GitHub\DS_2023\Proj_16_seojm\Proj_16_seojm\proj_16_seojm.c(412,32): warning C4013: 'malloc'이(가) 정의되지 않았습니다. extern은 int형을 반환하는 것으로 간주합니다.
-D:\GitHub\DS_2023\Proj_16_seojm\Proj_16_seojm\proj_16_seojm.c(412,57): warning C4312: '형식 캐스트': 'int'에서 더 큰 'GraphNode *'(으)로의 변환입니다.
-D:\GitHub\DS_2023\Proj_16_seojm\Proj_16_seojm\proj_16_seojm.c(437,57): warning C4312: '형식 캐스트': 'int'에서 더 큰 'StackNode *'(으)로의 변환입니다.
-D:\GitHub\DS_2023\Proj_16_seojm\Proj_16_seojm\proj_16_seojm.c(444,19): warning C4033: 'pop_stack'은(는) 값을 반환해야 합니다.
-D:\GitHub\DS_2023\Proj_16_seojm\Proj_16_seojm\proj_16_seojm.c(448,2): warning C4013: 'free'이(가) 정의되지 않았습니다. extern은 int형을 반환하는 것으로 간주합니다.
-D:\GitHub\DS_2023\Proj_16_seojm\Proj_16_seojm\proj_16_seojm.c(478,51): warning C4312: '형식 캐스트': 'int'에서 더 큰 'int *'(으)로의 변환입니다.
-D:\GitHub\DS_2023\Proj_16_seojm\Proj_16_seojm\proj_16_seojm.c(450): warning C4715: 'pop_stack': 모든 제어 경로에서 값을 반환하지는 않습니다.
-  Proj_16_seojm.vcxproj -> D:\GitHub\DS_2023\Proj_16_seojm\x64\Debug\Proj_16_seojm.exe
+  Proj_16_seojm.vcxproj -> C:\Users\win10\Documents\GitHub\2023\DS_2023\Proj_16_seojm\x64\Debug\Proj_16_seojm.exe
