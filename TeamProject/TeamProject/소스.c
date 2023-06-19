@@ -1,122 +1,695 @@
+#define PROB 2
+
+#if PROB == 1
+
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <time.h>
 
-// 이진 탐색 트리의 노드 구조체 정의
-typedef struct Node {
-    int key;        // 상품 식별자
-    int quantity;   // 재고 수량
-    struct Node* left;
-    struct Node* right;
-} Node;
+typedef struct element {
+	int name;
+	int fish; 
+	int shell;
+	int squid; // 10개로 늘리기
+} element;
 
-// 이진 탐색 트리에 노드를 삽입하는 함수
-// 이진 탐색 트리에 노드를 삽입하는 함수 (중복된 식별자 처리 추가)
-Node* insertNode(Node* root, int key, int quantity) {
-    // 새로운 노드 생성
-    Node* newNode = (Node*)malloc(sizeof(Node));
-    newNode->key = key;
-    newNode->quantity = quantity;
-    newNode->left = NULL;
-    newNode->right = NULL;
+typedef struct ListNode {
+	element data;
+	struct ListNode* link;
+} ListNode;
 
-    // 트리가 비어있을 경우 새로운 노드를 루트로 설정
-    if (root == NULL) {
-        root = newNode;
-        return root;
-    }
-
-    // 식별자가 이미 존재하는 경우 재고 수량 업데이트
-    if (key == root->key) {
-        root->quantity = quantity;
-        free(newNode);  // 중복된 노드는 삭제
-        return root;
-    }
-
-    // 상품 식별자를 기준으로 적절한 위치에 노드 삽입
-    if (key <= root->key) {
-        root->left = insertNode(root->left, key, quantity);
-    }
-    else {
-        root->right = insertNode(root->right, key, quantity);
-    }
-
-    return root;
-}
-// 중위 순회를 통해 재고 수량을 기준으로 정렬된 순서로 노드를 저장하는 함수
-void inorderTraversal(Node* root, Node** arr, int* index) {
-    if (root == NULL) {
-        return;
-    }
-
-    inorderTraversal(root->left, arr, index);
-    arr[*index] = root;
-    (*index)++;
-    inorderTraversal(root->right, arr, index);
+ListNode* insert(ListNode* head, ListNode* pre, element value) {
+	ListNode* p = (ListNode*)malloc(sizeof(ListNode));
+	p->data = value;
+	p->link = NULL;
+	if (pre == NULL) {
+		if (head == NULL) {
+			head = p;
+		}
+		else {
+			ListNode* last = head;
+			while (last->link != NULL) {
+				last = last->link;
+			}
+			last->link = p;
+		}
+	}
+	else {
+		p->link = pre->link;
+		pre->link = p;
+	}
+	return head;
 }
 
-// 재고 수량을 기준으로 노드를 정렬하는 함수
-void sortByQuantity(Node** arr, int size) {
-    for (int i = 0; i < size - 1; i++) {
-        for (int j = 0; j < size - 1 - i; j++) {
-            if (arr[j]->quantity > arr[j + 1]->quantity) {
-                Node* temp = arr[j];
-                arr[j] = arr[j + 1];
-                arr[j + 1] = temp;
-            }
-        }
-    }
+void add_value(ListNode* head, int position, int field, int value) {
+	ListNode* current = head;
+	int count = 0;
+	while (current != NULL && count < position) {
+		current = current->link;
+		count++;
+	}
+	if (current != NULL) {
+		switch (field) {
+		case 1:
+			current->data.fish += value;
+			break;
+		case 2:
+			current->data.shell += value;
+			break;
+		case 3:
+			current->data.squid += value;
+			break;
+		default:
+			printf("유효하지 않은 필드입니다.\n");
+			break;
+		}
+	}
+	else {
+		printf("해당 위치의 엘리먼트를 찾을 수 없습니다.\n");
+	}
 }
 
-// 상품을 식별자 순서로 출력하는 함수
-void printSortedById(Node* root) {
-    if (root == NULL) {
-        return;
-    }
+ListNode* delete_first(ListNode* head) {
+	if (head == NULL)
+		return NULL;
 
-    printSortedById(root->left);
-    printf("상품 식별자: %d, 재고 수량: %d\n", root->key, root->quantity);
-    printSortedById(root->right);
+	ListNode* removed = head;
+	head = removed->link;
+	free(removed);
+	return head;
 }
 
-// 상품을 재고 수량 순서로 출력하는 함수
-void printSortedByQuantity(Node** arr, int size) {
-    for (int i = 0; i < size; i++) {
-        printf("상품 식별자: %d, 재고 수량: %d\n", arr[i]->key, arr[i]->quantity);
-    }
+ListNode* delete(ListNode* head, int position) {
+	if (head == NULL)
+		return NULL;
+	if (position == 0) {
+		ListNode* removed = head;
+		head = head->link;
+		free(removed);
+		return head;
+	}
+	ListNode* pre = head;
+	ListNode* target = head->link;
+	int count = 1;
+	while (target != NULL && count < position) {
+		pre = pre->link;
+		target = target->link;
+		count++;
+	}
+	if (target != NULL) {
+		pre->link = target->link;
+		free(target);
+	}
+
+	return head;
 }
 
-int main() {
-    // 이진 탐색 트리 생성 및 데이터 추가
-    Node* root = NULL;
-    root = insertNode(root, 5, 10);
-    root = insertNode(root, 3, 5);
-    root = insertNode(root, 7, 7);
-    root = insertNode(root, 2, 8);
-    root = insertNode(root, 4, 3);
-    root = insertNode(root, 5, 11);
-    root = insertNode(root, 3, 2);
-    root = insertNode(root, 7, 7);
-    root = insertNode(root, 2, 1);
-    root = insertNode(root, 4, 3);
-    // 재고 수량을 기준으로 정렬하기 위한 임시 배열 생성
-    int nodeCount = 0;
-    Node** tempArr = (Node**)malloc(sizeof(Node*) * nodeCount);
-
-    // 중위 순회를 통해 재고 수량을 기준으로 정렬된 순서로 노드 저장
-    inorderTraversal(root, tempArr, &nodeCount);
-
-    // 재고 수량을 기준으로 노드 정렬
-    sortByQuantity(tempArr, nodeCount);
-
-    // 상품 식별자 순서로 출력
-    printf("정렬된 상품 식별자:\n");
-    printSortedById(root);
-
-    // 재고 수량 순서로 출력
-    printf("\n정렬된 재고 수량:\n");
-    printSortedByQuantity(tempArr, nodeCount);
-
-    free(tempArr);
-
-    return 0;
+void delete_value(ListNode* head, int position, int field, int value) {
+	ListNode* current = head;
+	int count = 0;
+	while (current != NULL && count < position) {
+		current = current->link;
+		count++;
+	}
+	if (current != NULL) {
+		switch (field) {
+		case 0:
+			current->data.fish -= value;
+			break;
+		case 1:
+			current->data.shell -= value;
+			break;
+		case 2:
+			current->data.squid -= value;
+			break;
+		default:
+			printf("유효하지 않은 필드입니다.\n");
+			break;
+		}
+	}
+	else {
+		printf("해당 위치의 엘리먼트를 찾을 수 없습니다.\n");
+	}
 }
+
+void print_list(ListNode* head) {
+	for (ListNode* p = head; p != NULL; p = p->link)
+		printf("(Position%d, Fish: %d, Shell: %d, Squid: %d)\n", p->data.name, p->data.fish, p->data.shell, p->data.squid);
+	printf("\n");
+}
+
+ListNode* search_list(ListNode* head, element x) {
+	ListNode* p = head;
+	while (p != NULL) {
+		if (p->data.fish == x.fish && p->data.shell == x.shell && p->data.squid == x.squid)
+			return p;
+		p = p->link;
+	}
+	return NULL; // 탐색 실패
+}
+
+int get_value(ListNode* head, int position, int field) {
+	ListNode* current = head;
+	int count = 0;
+	while (current != NULL && count < position) {
+		current = current->link;
+		count++;
+	}
+	if (current != NULL) {
+		switch (field) {
+		case 0:
+			return current->data.fish;
+		case 1:
+			return current->data.shell;
+		case 2:
+			return current->data.squid;
+		default:
+			printf("유효하지 않은 필드입니다.\n");
+			break;
+		}
+	}
+	else {
+		printf("해당 위치의 엘리먼트를 찾을 수 없습니다.\n");
+	}
+	return -1; // 오류 발생 시 -1 반환
+}
+ListNode* sort_value_up(ListNode* head, int position) {
+	int swapped;
+	ListNode* ptr1;
+	ListNode* lptr = NULL;
+	if (head == NULL)
+		return NULL;
+	do {
+		swapped = 0;
+		ptr1 = head;
+		while (ptr1->link != lptr) {
+			int current_field;
+			int next_field;
+			switch (position) {
+			case 1:
+				current_field = ptr1->data.fish;
+				next_field = ptr1->link->data.fish;
+				break;
+			case 2:
+				current_field = ptr1->data.shell;
+				next_field = ptr1->link->data.shell;
+				break;
+			case 3:
+				current_field = ptr1->data.squid;
+				next_field = ptr1->link->data.squid;
+				break;
+			default:
+				printf("유효하지 않은 필드입니다.\n");
+				return head;
+			}
+			if (current_field > next_field) {
+				element temp = ptr1->data;
+				ptr1->data = ptr1->link->data;
+				ptr1->link->data = temp;
+				swapped = 1;
+			}
+			ptr1 = ptr1->link;
+		}
+		lptr = ptr1;
+	} while (swapped);
+	return head;
+}
+
+ListNode* sort_value_down(ListNode* head, int position) {
+	int swapped;
+	ListNode* ptr1;
+	ListNode* lptr = NULL;
+	if (head == NULL)
+		return NULL;
+	do {
+		swapped = 0;
+		ptr1 = head;
+
+		while (ptr1->link != lptr) {
+			int current_field;
+			int next_field;
+
+			switch (position) {
+			case 1:
+				current_field = ptr1->data.fish;
+				next_field = ptr1->link->data.fish;
+				break;
+			case 2:
+				current_field = ptr1->data.shell;
+				next_field = ptr1->link->data.shell;
+				break;
+			case 3:
+				current_field = ptr1->data.squid;
+				next_field = ptr1->link->data.squid;
+				break;
+			default:
+				printf("유효하지 않은 필드입니다.\n");
+				return head;
+			}
+			if (current_field < next_field) {  // 내림차순으로 변경
+				element temp = ptr1->data;
+				ptr1->data = ptr1->link->data;
+				ptr1->link->data = temp;
+				swapped = 1;
+			}
+			ptr1 = ptr1->link;
+		}
+		lptr = ptr1;
+	} while (swapped);
+	return head;
+}
+
+int main(void) {
+	int randomNumber;
+	srand(time(NULL));
+	int position = 0; //공장
+	int field = 0; //품목
+	int thing = 0; // 손님이 사간 갯수
+
+	ListNode* head = NULL;
+	element e;
+	for (int i = 0; i < 7; i++) {
+		e.name = i;
+		e.fish = 10; // 500
+		e.shell = 10; // 600
+		e.squid = 10; // 700
+		head = insert(head, NULL, e);
+	}
+	printf("===========================시뮬레이션 시작=========================\n");
+	print_list(head);
+	printf("\n");
+	int miss_man = 0; //놓친 손님
+	int miss_num = 0; //놓친 갯수
+	
+	for (int j = 0; j < 30; j++) {
+		position = rand() % 7;
+		field = rand() % 3;
+		thing = (rand() % 10) + 1;
+		printf("================================%d회차=============================\n", j+1);
+		if (get_value(head, position, field) < thing) {
+			miss_man++;
+			miss_num += thing;
+			printf("주문 실패 / position:%d / field:%d / thing:%d / 떠나간 손님:%d / 받지 못한 주문:%d\n", position, field, thing, miss_man, miss_num);
+		}
+		else {
+			delete_value(head, position, field, thing);
+			printf("주문 성공 / position:%d / field:%d / thing:%d / 떠나간 손님:%d / 받지 못한 주문:%d\n", position, field, thing, miss_man, miss_num);
+		}
+		print_list(head);
+		printf("\n");
+	}
+	return 0;
+}
+
+#elif PROB == 2
+
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <limits.h>
+
+#define TRUE 1
+#define FALSE 0
+#define MAX_VERTICES	   100	
+#define INF 	   1000000	/* 무한대 (연결이 없는 경우) */
+
+typedef struct element {
+	int name;
+	int fish;
+	int shell;
+	int squid; // 10개로 늘리기
+} element;
+
+typedef struct ListNode {
+	element data;
+	struct ListNode* link;
+} ListNode;
+
+ListNode* insert(ListNode* head, ListNode* pre, element value) {
+	ListNode* p = (ListNode*)malloc(sizeof(ListNode));
+	p->data = value;
+	p->link = NULL;
+	if (pre == NULL) {
+		if (head == NULL) {
+			head = p;
+		}
+		else {
+			ListNode* last = head;
+			while (last->link != NULL) {
+				last = last->link;
+			}
+			last->link = p;
+		}
+	}
+	else {
+		p->link = pre->link;
+		pre->link = p;
+	}
+	return head;
+}
+
+void add_value(ListNode* head, int position, int field, int value) {
+	ListNode* current = head;
+	int count = 0;
+	while (current != NULL && count < position) {
+		current = current->link;
+		count++;
+	}
+	if (current != NULL) {
+		switch (field) {
+		case 1:
+			current->data.fish += value;
+			break;
+		case 2:
+			current->data.shell += value;
+			break;
+		case 3:
+			current->data.squid += value;
+			break;
+		default:
+			printf("유효하지 않은 필드입니다.\n");
+			break;
+		}
+	}
+	else {
+		printf("해당 위치의 엘리먼트를 찾을 수 없습니다.\n");
+	}
+}
+
+ListNode* delete_first(ListNode* head) {
+	if (head == NULL)
+		return NULL;
+
+	ListNode* removed = head;
+	head = removed->link;
+	free(removed);
+	return head;
+}
+
+ListNode* delete(ListNode* head, int position) {
+	if (head == NULL)
+		return NULL;
+	if (position == 0) {
+		ListNode* removed = head;
+		head = head->link;
+		free(removed);
+		return head;
+	}
+	ListNode* pre = head;
+	ListNode* target = head->link;
+	int count = 1;
+	while (target != NULL && count < position) {
+		pre = pre->link;
+		target = target->link;
+		count++;
+	}
+	if (target != NULL) {
+		pre->link = target->link;
+		free(target);
+	}
+
+	return head;
+}
+
+void delete_value(ListNode* head, int position, int field, int value) {
+	ListNode* current = head;
+	int count = 0;
+	while (current != NULL && count < position) {
+		current = current->link;
+		count++;
+	}
+	if (current != NULL) {
+		switch (field) {
+		case 0:
+			current->data.fish -= value;
+			break;
+		case 1:
+			current->data.shell -= value;
+			break;
+		case 2:
+			current->data.squid -= value;
+			break;
+		default:
+			printf("유효하지 않은 필드입니다.\n");
+			break;
+		}
+	}
+	else {
+		printf("해당 위치의 엘리먼트를 찾을 수 없습니다.\n");
+	}
+}
+
+void print_list(ListNode* head) {
+	for (ListNode* p = head; p != NULL; p = p->link)
+		printf("(Position%d, Fish: %d, Shell: %d, Squid: %d)\n", p->data.name, p->data.fish, p->data.shell, p->data.squid);
+	printf("\n");
+}
+
+ListNode* search_list(ListNode* head, element x) {
+	ListNode* p = head;
+	while (p != NULL) {
+		if (p->data.fish == x.fish && p->data.shell == x.shell && p->data.squid == x.squid)
+			return p;
+		p = p->link;
+	}
+	return NULL; // 탐색 실패
+}
+
+int get_value(ListNode* head, int position, int field) {
+	ListNode* current = head;
+	int count = 0;
+	while (current != NULL && count < position) {
+		current = current->link;
+		count++;
+	}
+	if (current != NULL) {
+		switch (field) {
+		case 0:
+			return current->data.fish;
+		case 1:
+			return current->data.shell;
+		case 2:
+			return current->data.squid;
+		default:
+			printf("유효하지 않은 필드입니다.\n");
+			break;
+		}
+	}
+	else {
+		printf("해당 위치의 엘리먼트를 찾을 수 없습니다.\n");
+	}
+	return -1; // 오류 발생 시 -1 반환
+}
+ListNode* sort_value_up(ListNode* head, int position) {
+	int swapped;
+	ListNode* ptr1;
+	ListNode* lptr = NULL;
+	if (head == NULL)
+		return NULL;
+	do {
+		swapped = 0;
+		ptr1 = head;
+		while (ptr1->link != lptr) {
+			int current_field;
+			int next_field;
+			switch (position) {
+			case 1:
+				current_field = ptr1->data.fish;
+				next_field = ptr1->link->data.fish;
+				break;
+			case 2:
+				current_field = ptr1->data.shell;
+				next_field = ptr1->link->data.shell;
+				break;
+			case 3:
+				current_field = ptr1->data.squid;
+				next_field = ptr1->link->data.squid;
+				break;
+			default:
+				printf("유효하지 않은 필드입니다.\n");
+				return head;
+			}
+			if (current_field > next_field) {
+				element temp = ptr1->data;
+				ptr1->data = ptr1->link->data;
+				ptr1->link->data = temp;
+				swapped = 1;
+			}
+			ptr1 = ptr1->link;
+		}
+		lptr = ptr1;
+	} while (swapped);
+	return head;
+}
+
+ListNode* sort_value_down(ListNode* head, int position) {
+	int swapped;
+	ListNode* ptr1;
+	ListNode* lptr = NULL;
+	if (head == NULL)
+		return NULL;
+	do {
+		swapped = 0;
+		ptr1 = head;
+
+		while (ptr1->link != lptr) {
+			int current_field;
+			int next_field;
+
+			switch (position) {
+			case 1:
+				current_field = ptr1->data.fish;
+				next_field = ptr1->link->data.fish;
+				break;
+			case 2:
+				current_field = ptr1->data.shell;
+				next_field = ptr1->link->data.shell;
+				break;
+			case 3:
+				current_field = ptr1->data.squid;
+				next_field = ptr1->link->data.squid;
+				break;
+			default:
+				printf("유효하지 않은 필드입니다.\n");
+				return head;
+			}
+			if (current_field < next_field) {  // 내림차순으로 변경
+				element temp = ptr1->data;
+				ptr1->data = ptr1->link->data;
+				ptr1->link->data = temp;
+				swapped = 1;
+			}
+			ptr1 = ptr1->link;
+		}
+		lptr = ptr1;
+	} while (swapped);
+	return head;
+}
+
+//그래프 코드 시작
+typedef struct GraphType {
+	int n;	// 정점의 개수
+	int weight[MAX_VERTICES][MAX_VERTICES];
+} GraphType;
+
+int distance[MAX_VERTICES];/* 시작정점으로부터의 최단경로 거리 */
+int found[MAX_VERTICES];		/* 방문한 정점 표시 */
+
+int choose(int distance[], int n, int found[])
+{
+	int i, min, minpos;
+	min = INT_MAX;
+	minpos = -1;
+	for (i = 0; i < n; i++)
+		if (distance[i] < min && !found[i]) {
+			min = distance[i];
+			minpos = i;
+		}
+	return minpos;
+}
+//
+void shortest_path(GraphType* g, int start)
+{
+	int i, u, w;
+	for (i = 0; i < g->n; i++) /* 초기화 */
+	{
+		distance[i] = g->weight[start][i];
+		found[i] = FALSE;
+	}
+	found[start] = TRUE;    /* 시작 정점 방문 표시 */
+	distance[start] = 0;
+	for (i = 0; i < g->n - 1; i++) {
+		u = choose(distance, g->n, found);
+		found[u] = TRUE;
+		for (w = 0; w < g->n; w++)
+			if (!found[w])
+				if (distance[u] + g->weight[u][w] < distance[w])
+					distance[w] = distance[u] + g->weight[u][w];
+	}
+	printf("정점 간의 최단 거리(distance):\n");
+	for (i = 0; i < g->n; i++) {
+		printf("%d -> %d: %d\n", start, i, distance[i]);
+	}
+}
+int search_shortest(GraphType* g, int start) {
+	shortest_path(g, start);
+
+	int nearestVertex = -1;
+	int shortestDistance = INT_MAX;
+
+	for (int i = 0; i < g->n; i++) {
+		if (i != start) {
+			if (distance[i] < shortestDistance) {
+				nearestVertex = i;
+				shortestDistance = distance[i];
+			}
+		}
+	}
+	return nearestVertex;
+}
+
+int main(void) {
+	int randomNumber;
+	srand(time(NULL));
+	int position = 0; //공장
+	int field = 0; //품목
+	int thing = 0; // 손님이 사간 갯수
+
+	ListNode* head = NULL;
+	element e;
+	for (int i = 0; i < 7; i++) {
+		e.name = i;
+		e.fish = 10; // 500
+		e.shell = 10; // 600
+		e.squid = 10; // 700
+		head = insert(head, NULL, e);
+	}
+	printf("===========================시뮬레이션 시작=========================\n");
+	print_list(head);
+	printf("\n");
+	int miss_man = 0; //놓친 손님
+	int miss_num = 0; //놓친 갯수
+
+	for (int j = 0; j < 30; j++) {
+		position = rand() % 7;
+		field = rand() % 3;
+		thing = (rand() % 10) + 1;
+		printf("================================%d회차=============================\n", j + 1);
+		if (get_value(head, position, field) < thing) {
+			miss_man++;
+			miss_num += thing;
+			printf("주문 실패 / position:%d / field:%d / thing:%d / 떠나간 손님:%d / 받지 못한 주문:%d\n", position, field, thing, miss_man, miss_num);
+		}
+		else {
+			delete_value(head, position, field, thing);
+			printf("주문 성공 / position:%d / field:%d / thing:%d / 떠나간 손님:%d / 받지 못한 주문:%d\n", position, field, thing, miss_man, miss_num);
+		}
+		print_list(head);
+		printf("\n");
+	}
+	GraphType g = { 7,
+	{{ 0,  7,  INF, INF,   3,  10, INF },
+	{ 7,  0,    4,  10,   2,   6, INF },
+	{ INF,  4,    0,   2, INF, INF, INF },
+	{ INF, 10,    2,   0,  11,   9,   4 },
+	{ 3,  2,  INF,  11,   0, INF,   5 },
+	{ 10,  6,  INF,   9, INF,   0, INF },
+	{ INF, INF, INF,   4,   5, INF,   0 } }
+	};
+	int nearestVertex = search_shortest(&g, 4);
+	if (nearestVertex != -1) {
+		printf("가장 가까운 정점: %d\n", nearestVertex);
+	}
+	else {
+		printf("가까운 정점이 없습니다.\n");
+	}
+	return 0;
+
+	//return 0;
+}
+
+#endif
