@@ -319,9 +319,9 @@ int main(void) {
 
 typedef struct element {
 	int name;
-	int fish;
-	int shell;
-	int squid; // 10개로 늘리기
+	int field0;
+	int field1;
+	int field2; // 10개로 늘리기
 } element;
 
 typedef struct ListNode {
@@ -361,14 +361,14 @@ void add_value(ListNode* head, int position, int field, int value) {
 	}
 	if (current != NULL) {
 		switch (field) {
+		case 0:
+			current->data.field0 += value;
+			break;
 		case 1:
-			current->data.fish += value;
+			current->data.field1 += value;
 			break;
 		case 2:
-			current->data.shell += value;
-			break;
-		case 3:
-			current->data.squid += value;
+			current->data.field2 += value;
 			break;
 		default:
 			printf("유효하지 않은 필드입니다.\n");
@@ -425,13 +425,13 @@ void delete_value(ListNode* head, int position, int field, int value) {
 	if (current != NULL) {
 		switch (field) {
 		case 0:
-			current->data.fish -= value;
+			current->data.field0 -= value;
 			break;
 		case 1:
-			current->data.shell -= value;
+			current->data.field1 -= value;
 			break;
 		case 2:
-			current->data.squid -= value;
+			current->data.field2 -= value;
 			break;
 		default:
 			printf("유효하지 않은 필드입니다.\n");
@@ -445,14 +445,14 @@ void delete_value(ListNode* head, int position, int field, int value) {
 
 void print_list(ListNode* head) {
 	for (ListNode* p = head; p != NULL; p = p->link)
-		printf("(Position%d, Fish: %d, Shell: %d, Squid: %d)\n", p->data.name, p->data.fish, p->data.shell, p->data.squid);
+		printf("(Position%d, Field0: %d, field1: %d, field2: %d)\n", p->data.name, p->data.field0, p->data.field1, p->data.field2);
 	printf("\n");
 }
 
 ListNode* search_list(ListNode* head, element x) {
 	ListNode* p = head;
 	while (p != NULL) {
-		if (p->data.fish == x.fish && p->data.shell == x.shell && p->data.squid == x.squid)
+		if (p->data.field0 == x.field0 && p->data.field1 == x.field1 && p->data.field2 == x.field2)
 			return p;
 		p = p->link;
 	}
@@ -469,11 +469,11 @@ int get_value(ListNode* head, int position, int field) {
 	if (current != NULL) {
 		switch (field) {
 		case 0:
-			return current->data.fish;
+			return current->data.field0;
 		case 1:
-			return current->data.shell;
+			return current->data.field1;
 		case 2:
-			return current->data.squid;
+			return current->data.field2;
 		default:
 			printf("유효하지 않은 필드입니다.\n");
 			break;
@@ -498,16 +498,16 @@ ListNode* sort_value_up(ListNode* head, int position) {
 			int next_field;
 			switch (position) {
 			case 1:
-				current_field = ptr1->data.fish;
-				next_field = ptr1->link->data.fish;
+				current_field = ptr1->data.field0;
+				next_field = ptr1->link->data.field0;
 				break;
 			case 2:
-				current_field = ptr1->data.shell;
-				next_field = ptr1->link->data.shell;
+				current_field = ptr1->data.field1;
+				next_field = ptr1->link->data.field1;
 				break;
 			case 3:
-				current_field = ptr1->data.squid;
-				next_field = ptr1->link->data.squid;
+				current_field = ptr1->data.field2;
+				next_field = ptr1->link->data.field2;
 				break;
 			default:
 				printf("유효하지 않은 필드입니다.\n");
@@ -542,16 +542,16 @@ ListNode* sort_value_down(ListNode* head, int position) {
 
 			switch (position) {
 			case 1:
-				current_field = ptr1->data.fish;
-				next_field = ptr1->link->data.fish;
+				current_field = ptr1->data.field0;
+				next_field = ptr1->link->data.field0;
 				break;
 			case 2:
-				current_field = ptr1->data.shell;
-				next_field = ptr1->link->data.shell;
+				current_field = ptr1->data.field1;
+				next_field = ptr1->link->data.field1;
 				break;
 			case 3:
-				current_field = ptr1->data.squid;
-				next_field = ptr1->link->data.squid;
+				current_field = ptr1->data.field2;
+				next_field = ptr1->link->data.field2;
 				break;
 			default:
 				printf("유효하지 않은 필드입니다.\n");
@@ -632,7 +632,46 @@ int search_shortest(GraphType* g, int start) {
 	return nearestVertex;
 }
 
+#define MAX_N 10
+int search_nth_shortest(GraphType* g, int start, int n) {
+	shortest_path(g, start);
+
+	int nearestVertices[MAX_N];
+	int shortestDistances[MAX_N];
+
+	for (int i = 0; i < n; i++) {
+		nearestVertices[i] = -1;
+		shortestDistances[i] = INT_MAX;
+	}
+	for (int i = 0; i < g->n; i++) {
+		if (i != start) {
+			for (int j = 0; j < n; j++) {
+				if (distance[i] < shortestDistances[j]) {
+					for (int k = n - 1; k > j; k--) {
+						nearestVertices[k] = nearestVertices[k - 1];
+						shortestDistances[k] = shortestDistances[k - 1];
+					}
+					nearestVertices[j] = i;
+					shortestDistances[j] = distance[i];
+					break;
+				}
+			}
+		}
+	}
+	return nearestVertices[n - 1];
+}
+
 int main(void) {
+	GraphType g = { 7,
+	{{ 0,  7,  INF, INF,   3,  10, INF },
+	{ 7,  0,    4,  10,   2,   6, INF },
+	{ INF,  4,    0,   2, INF, INF, INF },
+	{ INF, 10,    2,   0,  11,   9,   4 },
+	{ 3,  2,  INF,  11,   0, INF,   5 },
+	{ 10,  6,  INF,   9, INF,   0, INF },
+	{ INF, INF, INF,   4,   5, INF,   0 } }
+	};
+
 	int randomNumber;
 	srand(time(NULL));
 	int position = 0; //공장
@@ -643,26 +682,48 @@ int main(void) {
 	element e;
 	for (int i = 0; i < 7; i++) {
 		e.name = i;
-		e.fish = 10; // 500
-		e.shell = 10; // 600
-		e.squid = 10; // 700
+		e.field0 = 10; // 500
+		e.field1 = 10; // 600
+		e.field2 = 10; // 700
 		head = insert(head, NULL, e);
 	}
+
 	printf("===========================시뮬레이션 시작=========================\n");
 	print_list(head);
 	printf("\n");
+	int n = 1;
 	int miss_man = 0; //놓친 손님
 	int miss_num = 0; //놓친 갯수
-
+	int nearestNthVertex;
 	for (int j = 0; j < 30; j++) {
 		position = rand() % 7;
 		field = rand() % 3;
 		thing = (rand() % 10) + 1;
 		printf("================================%d회차=============================\n", j + 1);
-		if (get_value(head, position, field) < thing) {
-			miss_man++;
-			miss_num += thing;
-			printf("주문 실패 / position:%d / field:%d / thing:%d / 떠나간 손님:%d / 받지 못한 주문:%d\n", position, field, thing, miss_man, miss_num);
+		if (get_value(head, position, field) < thing) { // 주문 수량이 더 많으면
+			for (int n = 1; n <= 7; n++) {
+				if (n == 7) {
+					if (get_value(head, nearestNthVertex, field) < thing) { // 주문 수량이 더 많으면
+						miss_man++;
+						miss_num += thing;
+						printf("주문 실패 / position:%d / field:%d / thing:%d / 떠나간 손님:%d / 받지 못한 주문:%d\n", position, field, thing, miss_man, miss_num);
+					}
+					else {
+						delete_value(head, nearestNthVertex, field, thing);
+						printf("주문 성공 / position:%d / field:%d / thing:%d / 부족했던 정점:%d / 대신한 정점:%d\n", position, field, thing, position, nearestNthVertex);
+						break;
+					}
+				}
+				else {
+					nearestNthVertex = search_nth_shortest(&g, position, n);
+					if (get_value(head, nearestNthVertex, field) < thing) { continue; } // 주문 수량이 더 많으면 다음n번째 가까운 정점
+					else {
+						delete_value(head, nearestNthVertex, field, thing);
+						printf("주문 성공 / position:%d / field:%d / thing:%d / 부족했던 정점:%d / 대신한 정점:%d\n", position, field, thing, position, nearestNthVertex);
+						break;
+					}
+				}
+			}	
 		}
 		else {
 			delete_value(head, position, field, thing);
@@ -671,25 +732,7 @@ int main(void) {
 		print_list(head);
 		printf("\n");
 	}
-	GraphType g = { 7,
-	{{ 0,  7,  INF, INF,   3,  10, INF },
-	{ 7,  0,    4,  10,   2,   6, INF },
-	{ INF,  4,    0,   2, INF, INF, INF },
-	{ INF, 10,    2,   0,  11,   9,   4 },
-	{ 3,  2,  INF,  11,   0, INF,   5 },
-	{ 10,  6,  INF,   9, INF,   0, INF },
-	{ INF, INF, INF,   4,   5, INF,   0 } }
-	};
-	int nearestVertex = search_shortest(&g, 4);
-	if (nearestVertex != -1) {
-		printf("가장 가까운 정점: %d\n", nearestVertex);
-	}
-	else {
-		printf("가까운 정점이 없습니다.\n");
-	}
 	return 0;
-
-	//return 0;
 }
 
 #endif
